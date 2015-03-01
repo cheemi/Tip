@@ -14,39 +14,37 @@
 <input type="button" value="成功" id="btnSuccess">
 <input type="button" value="警告" id="btnWarning">
 <input type="button" value="错误" id="btnError">
+<input type="button" value="页面层" id="btnShow">
+ 
 </div>
-   
-
+  
 <script type="text/javascript">
  
 	addEvent(document.getElementById("btnPromt"),"click",function(){
-		  new cTip.win({
-            type: 5,
-            msg: "确定要删除所选吗?",
-            confirmEvent: function () {
-				
-			}
+		   layer.question("确定要删除吗？",function(){
+				alert("您选择了确定");   
+		   },function(){
+				  alert("您选择了取消");    
 			});
 	});
 	addEvent(document.getElementById("btnSuccess"),"click",function(){
-		  new cTip.win({
-            type: 3,
-            msg: "保存成功！"
-			});
+		 layer.success("保存成功！");
 	});
 	addEvent(document.getElementById("btnWarning"),"click",function(){
-		  new cTip.win({
-            type: 2,
-            msg: "请确保填写所有内容"
-			});
+		 layer.warn("请确保填写所有内容");
 	});
 	addEvent(document.getElementById("btnError"),"click",function(){
-		  new cTip.win({
-            type: 4,
-            msg: "邮箱格式错误"
-			});
+		  layer.error("邮箱格式错误");
 	});
- 
+ addEvent(document.getElementById("btnShow"),"click",function(){
+	 var html="<div id=\"c-dialog\">"
+		+"<h1>小新</h1>"
+		+"<p>小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了小新今年5岁了</p>"
+		+"</div>";
+		 layer.html("xx标题",html);
+	});
+	 
 </script>
+ 
 </body>
 </html>

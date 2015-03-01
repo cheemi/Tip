@@ -143,6 +143,7 @@ var cTip = {
         if (typeof el != "object" || typeof style != "object")
             return;
         for (var x in style) {
+			
             if (x == "opacity" && cTip.browser.msie){
                 el.style.filter = (style[x] == 1) ? "" : "alpha(opacity=" + (style[x] * 100) + ")";
             el.style.filter="alpha(opacity=30)";
@@ -162,17 +163,19 @@ cTip.browser = {
 }
 
 cTip.zIndex = 10000;
-
 cTip.win = function (config) {
     this.config = {
-        type: 1,//对话框类型(可选参数,默认值为1) 1:提示 2:警告 3:正确或成功 4:错误 5:问号
-        width: 240, //对话框宽度(可选参数,默认为400)
+        type: 1,//对话框类型(可选参数,默认值为1) 1:提示 2:警告 3:正确或成功 4:错误 5:问号 6:tip
+        width: 240, //对话框宽度(可选参数)
         height: "",//(可选参数,默认是根据里面内容自动增长高度)
         title: "提示",
         msg: "",
         fade: 1000,
         timeout: 2000,
         isOverlay: true ,//显示遮罩层(可选参数,默认为true)
+		closeBtn:true,//是否显示取消按钮
+		confirmEventBtn:true,//是否显示确定按钮
+		confirmBtnTitle:"确定",
         closeEvent: null,  // type设为5时,取消按钮的回调函数(可选参数)
         confirmEvent: null, //type设为5时,确定按钮的回调函数(可选参数),
         iconClass:""
@@ -182,49 +185,31 @@ cTip.win = function (config) {
     }
     this.show();
 };
+
 cTip.win.prototype = {
-   
     show: function () {
         var  config = this.config,
             oThis = this;
-        if (config.isOverlay)
-            this.overlay = new cTip.overlay();
         var win = document.createElement("div");
         window.win = win;
-        if (config.type == 1) {
-          
-             
-            win.className = "alert-row";
-          
-            var alertDiv = document.createElement("div");
-            alertDiv.className = "alert alert-success";
-            alertDiv.innerHTML = "  <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button><strong>" + config.msg + "</strong>";
-
-            win.appendChild(alertDiv);
-
-            document.getElementsByTagName("body")[0].appendChild(win);
-
-            setTimeout(function () { $(".alert-row").fadeOut(config.fade); }, config.timeout);
-        }
-        else  {
-           
+		 if (config.isOverlay){
+            this.overlay = new cTip.overlay();
+			win.className="dialog-shadow";
+		}
+      		
              cTip.setStyle(win, {
-                width: config.width+"px",
-                border: "1px solid #CCC",
+                width: config.width+"px",		
                 position: "absolute",
                 background: "#fff",
                 zIndex: cTip.zIndex++ 
                 
             });
-           
-
+			win.style.height =config.height+"px";
             var topDiv = document.createElement("div");
             topDiv.className = "tip_top";
             var sp_close = document.createElement("span");
-
-           
             sp_close.className = "sp_close";
-         
+         	sp_close.innerHTML="×";
             topDiv.innerHTML = "<span>"+config.title+"</span>";
             topDiv.appendChild(sp_close);
 
@@ -235,7 +220,8 @@ cTip.win.prototype = {
             var midDiv = document.createElement("div");
            
             midDiv.className = "tip_mid";
-            if (config.type == 2) {
+		 
+              if (config.type == 2) {
                 config.iconClass = "icon_warn";
             }
             else if (config.type == 5) {
@@ -243,20 +229,18 @@ cTip.win.prototype = {
             }
             else if (config.type == 4) {
                 config.iconClass = "icon_error";
-            } else{
+            } else if (config.type == 3) {
                 config.iconClass = "icon_success";
             }
             midDiv.innerHTML = "<span class=\""+config.iconClass+"\"></span><span>" + config.msg + "</span>";
 
             var bottomDiv = document.createElement("div");
 
-           
-            
             bottomDiv.className = "tip_bottom";
-  if (config.type == 5) {
+  			if (config.type == 5||(config.type==0&&config.closeBtn)) {
             var winBtnOk = document.createElement("span");
             winBtnOk.className = "btn_ok";
-            winBtnOk.innerHTML = "确定";
+            winBtnOk.innerHTML =config.confirmBtnTitle;
 
             winBtnOk.onclick = function () {
                 oThis.close();
@@ -266,9 +250,10 @@ cTip.win.prototype = {
             }
             bottomDiv.appendChild(winBtnOk);
            }
-                var winBtnCancel = document.createElement("span");
+		   if(config.closeBtn){
+				var winBtnCancel = document.createElement("span");
                 winBtnCancel.className = "btn_cancel";
-				 if (config.type == 5) {
+				 if (config.type == 5||config.type==0) {
                  winBtnCancel.innerHTML = "取消";
 				 }else{
 						 winBtnCancel.innerHTML = "确定";
@@ -281,9 +266,9 @@ cTip.win.prototype = {
                     }
                 };
            
-            bottomDiv.appendChild(winBtnCancel);
-           
- 
+            bottomDiv.appendChild(winBtnCancel);   
+		   }
+                
             win.appendChild(topDiv);
             win.appendChild(midDiv);
             win.appendChild(bottomDiv);
@@ -293,7 +278,7 @@ cTip.win.prototype = {
 			 
 			 addEvent(window,"resize",this.changeSize);
 			 this.disableScroll();
-        }
+         
     },
 	changeSize:function(){
 			 cTip.setWindowCenter(win);	
@@ -309,7 +294,7 @@ cTip.win.prototype = {
     },
 	disableScroll:function(){
 		addEvent(window, "DOMMouseScroll",this.wheel);
-		document.onkeydown=this.keydown;
+		 
 		 
 	},
 	wheel:function(e){
@@ -318,19 +303,7 @@ cTip.win.prototype = {
 	enableScroll:function(){
 		cTip.removeEvent(window,"DOMMouseScroll",this.wheel);
 		document.onkeydown=null;	
-	},
-	keydown:function(e){
-		 
-		var keys=[37,38,39,40];
-		 cTip.preventDefault(e);
-		for(var i=0,len=keys.length;i<len;i++){
-			if(e.keyCode==keys[i]){
-				cTip.preventDefault(e);
-				return;	
-			}	
-		}	
-	}
-   
+	} 
 };
 
 /****************************************
@@ -344,17 +317,18 @@ obj.close();//关闭(从页面中移出)
  
 ****************************************/
 cTip.overlay = function () {
+		
     var overlay = document.createElement("div");
+
     cTip.setStyle(overlay, {
         width: "100%",
         height: cTip.getPageSize()[1] + "px",
         position: "absolute",
         left: "0",
         top: "0",
-        zIndex: cTip.zIndex++,
-		background:"#000",
-        opacity: 0.3 ,
-		 
+        zIndex: cTip.zIndex++ ,
+		background: "#000",
+		opacity:0.3
     });
     this.changeSize = function () {
         overlay.style.height = cTip.getPageSize()[1] + "px";
@@ -382,5 +356,49 @@ cTip.overlay = function () {
 
 var addEvent = addEvent || cTip.addEvent,
 	$=$||cTip.$;
+var layer={
+	alert:function(msg){new cTip.win({
+            type: 5,
+            msg: msg
+			});
+	},
+	error:function(msg){
+		new cTip.win({
+            type: 4,
+            msg: msg
+			});	
+	},
+	warn:function(msg){
+		 new cTip.win({
+            type: 2,
+            msg: msg
+			});	
+	},
+	success:function(msg){
+		 new cTip.win({
+         type: 3,
+         msg: msg
+		});	
+	},
+	question :function(msg,confirmEvent,cancelEvent){
+			new cTip.win({
+            type: 5,
+            msg: msg,
+			confirmEvent:confirmEvent,
+			closeEvent:cancelEvent 
+			});	
+	},
+	html:function(title,html){
+		 new cTip.win({
+			width:500,
+			title:title,
+            type: 0,
+            msg: html,
+			closeBtn:false,
+			confirmBtn:false
+			});
+	}
+	
+	};
  
  
