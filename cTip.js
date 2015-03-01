@@ -198,13 +198,16 @@ cTip.win.prototype = {
 		}
       		
              cTip.setStyle(win, {
-                width: config.width+"px",		
+                width: config.width+"px",
+				 
                 position: "absolute",
                 background: "#fff",
                 zIndex: cTip.zIndex++ 
                 
             });
+			if(config.height!=""){
 			win.style.height =config.height+"px";
+			}
             var topDiv = document.createElement("div");
             topDiv.className = "tip_top";
             var sp_close = document.createElement("span");
